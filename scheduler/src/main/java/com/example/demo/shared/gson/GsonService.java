@@ -15,15 +15,15 @@ public class GsonService {
       this.gson = new Gson(); 
     }
 
-    public <T> String serialize(T object) {
+    public <T> String toJson(T object) {
       return gson.toJson(object);
     }
 
-    public <T> T deserialize(String json, Class<T> clazz) {
+    public <T> T fromJson(String json, Class<T> clazz) {
       return gson.fromJson(json, clazz);
     }
 
-    public <T> T deserialize(String json, Type type) {
+    public <T> T fromJson(String json, Type type) {
       return gson.fromJson(json, type);
     }
 }

@@ -1,6 +1,9 @@
 package com.example.demo.amqp;
 
+import java.util.Objects;
+
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -9,21 +12,24 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class QueueService {
 
-	private final RabbitTemplate rabbitTemplate;
+    private final RabbitTemplate rabbitTemplate;
 
-	private String INCOMING_QUEUE;
-	private String OUTCOMING_QUEUE;
+    // Uncomment and use these if you need to specify the queue names from properties
+    // @Value("${rabbitmq.incoming.queue}")
+    // private String incomingQueue;
 
-	private void queuePub(String queue, String message) {
-		this.rabbitTemplate.convertAndSend(queue, message);
-	}
-	
-	// public void publishTransferencia(Objeto objeto) {
-	// 	this.queuePub(INCOMING_QUEUE, JacksonUtil.toString(transferencia));
-	// }
+    // @Value("${rabbitmq.outgoing.queue}")
+    // private String outgoingQueue;
 
-	private String queueSub(String queue) {
-		return (String) this.rabbitTemplate.receiveAndConvert(queue);
-	}
+    private void enqueue(String queue, String message) {
+        this.rabbitTemplate.convertAndSend(queue, message);
+    }
 
+    public String getFromQueue(String queueName) {
+        Object object = this.rabbitTemplate.receiveAndConvert(queueName);
+        
+        if (Objects.isNull(object)) return null;
+
+        return object.toString();
+    }
 }

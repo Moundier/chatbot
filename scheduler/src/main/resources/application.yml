@@ -1,6 +1,12 @@
 spring:
+
   application:
     name: "demo"
+  
+  # devtools:
+  #   livereload:
+  #     port: 35000
+
   rabbitmq:
     host: localhost
     port: 5672
@@ -8,5 +14,5 @@ spring:
     password: guest
   
 redis:
-  port: 6789
+  port: 6379
   host: "localhost"

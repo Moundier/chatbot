@@ -14,7 +14,3 @@ public class SchedulerConfig {
         return Executors.newScheduledThreadPool(1); 
     }
 }
-
-// wppconnect
-// scheduler - redis 40
-// python rag
