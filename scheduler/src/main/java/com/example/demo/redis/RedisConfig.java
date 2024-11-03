@@ -23,15 +23,14 @@ public class RedisConfig {
     }
 
     @PostConstruct
-    public void redisPing() {
-
-        final String status = jedis.getClient().getHost() + ":" + jedis.getClient().getPort();
+    public void pingConnection() {
 
         try {
             jedis.ping();
-            System.out.println("Successfull: Redis at " + status);
+            System.out.println(RedisStatus.SUCCESS.getMessage());
         } catch (JedisConnectionException e) {
-            System.err.println("Unable to connect to Redis at " + status);
+            System.err.println(RedisStatus.ERROR.getErrorMessage(jedis.getClient().getHost(), String.valueOf(jedis.getClient().getPort())));
         }
     }
+
 }

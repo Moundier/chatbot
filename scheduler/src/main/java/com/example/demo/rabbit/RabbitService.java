@@ -1,4 +1,4 @@
-package com.example.demo.amqp;
+package com.example.demo.rabbit;
 
 import java.util.Objects;
 
@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class QueueService {
+public class RabbitService {
 
     private final RabbitTemplate rabbitTemplate;
 
@@ -26,9 +26,12 @@ public class QueueService {
     }
 
     public String getFromQueue(String queueName) {
+		
         Object object = this.rabbitTemplate.receiveAndConvert(queueName);
         
-        if (Objects.isNull(object)) return null;
+        if (Objects.isNull(object)) {
+            return null;
+        }
 
         return object.toString();
     }
