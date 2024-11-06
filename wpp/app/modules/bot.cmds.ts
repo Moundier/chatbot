@@ -21,11 +21,9 @@ Chatbot Information 🤖
 
 cmds.set('1', `
 Comandos do Bot:
+- /: Chame pelo chatbot
 - /dev: Informações sobre o chatbot
-- /consult: Agendar uma consulta
-- /talk: Falar com atendente
-- /suggest: Sugerir mudanças
-- /info: Ver mais informações
+- Outros comandos virão no futuro!
 `.trim());
 
 cmds.set('2', `
