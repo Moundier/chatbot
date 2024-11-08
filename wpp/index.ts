@@ -1,13 +1,8 @@
-import { amqp } from 'amqp';
 import { create, Message, Whatsapp } from '@wppconnect-team/wppconnect';
-import { promises as fs } from 'fs';
+import { QrCode } from './app/models/qrcode/qrcode.model';
 
-import cmds from './app/modules/bot.cmds';
-
-export interface QrCode {
-    type?: string;
-    data?: Buffer;
-}
+import botCommandsRepository from './app/models/bot/bot.repository';
+import qrCodeService from './app/models/qrcode/qrcode.service';
 
 export const main: (() => Promise<void>) = (async (): Promise<void> => {
 
@@ -15,11 +10,10 @@ export const main: (() => Promise<void>) = (async (): Promise<void> => {
 
     client.onAnyMessage((message: Message) => {
 
-        if (cmds.has(message.content)) {
-            const sender: string = message.from; 
-            const respond: string | undefined = cmds.get(message.content)!;
-            client.sendText(sender, respond);
-            return;
+        let response: string | null = botCommandsRepository.getCommandResponse(message.content);
+
+        if (response) {
+            client.sendText(message.from, response);
         }
 
         if (message.fromMe) {
@@ -27,52 +21,42 @@ export const main: (() => Promise<void>) = (async (): Promise<void> => {
             return;
         }
 
-        console.log({
-            senderShort: message.sender.shortName, // Nome q eu salvei
-            pushname: message.sender.pushname, // Nome q ele exive
-            content: message.content, // mensagem
-            id: message.id, // id do usuario
-        })
+        messageContent(message);
 
     });
 
 });
 
 async function wppConnect(): Promise<Whatsapp> {
-    return await create({
+    
+    const connection: Whatsapp = await create({
         session: '',
         logQR: true,
         debug: false,
         disableWelcome: true,
         catchQR: (base64Qr: string, asciiQR: string) => {
-            const matches = base64Qr.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-            const qrCodeObject: QrCode = {};
 
-            if (matches === null) return;
+            let qrCode: QrCode | null = qrCodeService.parseQrCode(base64Qr);
 
-            qrCodeObject.type = matches[1];
-            qrCodeObject.data = Buffer.from(matches[2], 'base64');
-
-            qrCodeImage(qrCodeObject, "qr-code");
+            if (qrCode) {
+                qrCodeService.saveQrCodeImage(qrCode, 'qr-code')
+            }
         },
     });
+
+    return connection;
 }
 
+async function messageContent(message: Message): Promise<void> {
 
-export async function qrCodeImage(response: QrCode, name: string): Promise<void> {
-    
-    if (!response.data) {
-        console.warn('No data available to save.');
-        return;
+    const dto: object = {
+        id: message.id, // id do usuario
+        content: message.content, // mensagem
+        pushname: message.sender.pushname, // Nome q ele exibe
+        shortname: message.sender.shortName, // Nome q eu salvei
     }
 
-    try {
-        const filename = name.endsWith('.png') ? name : `${name}.png`;
-        await fs.writeFile(filename, response.data, 'binary');
-        console.log(`Image ${filename}`);
-    } catch (error: unknown) {
-        console.error('Error:', error);
-    }
+    console.log('[Message]:\n' + JSON.stringify(dto, null, 1));
 }
 
-main();
+main().catch((e: unknown) => console.error(e));

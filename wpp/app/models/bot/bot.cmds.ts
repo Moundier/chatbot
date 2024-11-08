@@ -1,6 +1,6 @@
-const cmds = new Map<string, string>();
+const commands = new Map<string, string>();
 
-cmds.set('/', `
+commands.set('/', `
 Digite um numero:
 1️⃣ Ver comandos do bot
 2️⃣ Agendar uma consulta
@@ -9,7 +9,7 @@ Digite um numero:
 5️⃣ Ver informacoes
 `.trim());
 
-cmds.set('/dev', `
+commands.set('/dev', `
 Chatbot Information 🤖
 🖥️ Execution Environment: local server
 🚀 Version: 1.0.0
@@ -19,27 +19,19 @@ Chatbot Information 🤖
 👨‍💻 Developer: Gabriel Vieira Casanova
 `.trim());
 
-cmds.set('1', `
+commands.set('1', `
 Comandos do Bot:
 - /: Chame pelo chatbot
 - /dev: Informações sobre o chatbot
 - Outros comandos virão no futuro!
 `.trim());
 
-cmds.set('2', `
-Por favor, forneça a data e hora desejadas para a consulta.
-`.trim());
+commands.set('2', `Por favor, forneça a data e hora desejadas para a consulta.`.trim());
 
-cmds.set('3', `
-Conectando você com um atendente. Por favor, aguarde...
-`.trim());
+commands.set('3', `Conectando você com um atendente. Por favor, aguarde...`.trim());
 
-cmds.set('4', `
-Por favor, digite sua sugestão abaixo:
-`.trim());
+commands.set('4', `Por favor, digite sua sugestão abaixo:`.trim());
 
-cmds.set('5', `
-Aqui estão mais informações sobre nossos serviços e suporte...
-`.trim());
+commands.set('5', `Aqui estão mais informações sobre nossos serviços e suporte...`.trim());
 
-export default cmds;
+export default commands;
