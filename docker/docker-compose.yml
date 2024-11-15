@@ -24,6 +24,40 @@ services:
       - "5540:5540"
     volumes:
       - redis-insight:/data
+    
+  pgvector:
+    image: ankane/pgvector
+    container_name: pgvector
+    environment:
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_USER: myuser
+      POSTGRES_DB: mydatabase
+    volumes:
+      - pgvector_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - pg_network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: adminpassword
+    ports:
+      - "80:80"
+    networks:
+      - pg_network
+
+  version: '3.8'
+
+  chromadb:
+    image: chromadb/chromadb:latest
+    container_name: chromadb_server
+    ports:
+      - "8000:8000"
+    restart: always
 
 volumes:
   redis-insight:
