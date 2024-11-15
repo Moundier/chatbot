@@ -1,4 +1,6 @@
 langchain 
 langchain_community
-sentence-transformers
-pika
+langchain-ollama
+tiktoken
+bs4
+chromadb
