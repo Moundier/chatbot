@@ -1,18 +1,25 @@
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import OllamaEmbeddings
-from langchain_community.chat_models import ChatOllama
 from langchain_core.runnables import RunnablePassthrough
+from langchain_core.runnables import Runnable
+from langchain_core.runnables import RunnableBinding
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.text_splitter import CharacterTextSplitter
 
+from langchain_ollama import ChatOllama, OllamaEmbeddings
+
 from langchain_core.documents import Document
 from langchain_core.vectorstores import VectorStoreRetriever
-from typing import List
+from typing import List, Dict, Any
 
-# Initialize Chat Model
-model_local = ChatOllama(model="mistral")
+
+from langchain.chains import create_retrieval_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
+
+import json
+
+llm = ChatOllama(model="mistral", base_url="http://localhost:11434")
 
 # 1. Load and split data into chunks
 urls: list = [
@@ -27,9 +34,6 @@ for url in urls:
     loaded_docs = loader.load()
     docs.extend(loaded_docs)  # Append all documents from each URL
 
-# Check document load status
-print("Loaded documents:", len(docs))
-
 # Split documents
 text_splitter = CharacterTextSplitter.from_tiktoken_encoder(chunk_size=7500, chunk_overlap=100)
 docs_splits = text_splitter.split_documents(documents=docs)
@@ -40,38 +44,37 @@ chroma = Chroma.from_documents(
     documents=docs_splits,
     collection_name="rag-chroma",
     embedding=embedding_model,
-    # chroma server
-    client_settings={
-        # "chroma_api_impl": "rest",
-        "chroma_server_host": "localhost",
-        "chroma_server_http_port": 8000
-    }
 )
 
-retriever = chroma.as_retriever(search_kwargs={'k': len(docs),})
+print("Document lenght: " + str(len(docs)))
+retriever = chroma.as_retriever(search_kwargs={'k': len(docs)})
 
-# 3. Before RAG
-println("\nBefore RAG")
-before_rag_template = "What is {topic}"
-before_rag_prompt = ChatPromptTemplate.from_template(before_rag_template)
-before_rag_chain = before_rag_prompt | model_local | StrOutputParser()
-println(before_rag_chain.invoke({"topic": "Ollama"}))
+query: str = "What is Ollama?"
 
-# 4. After RAG
-println("\nAfter RAG")
-after_rag_template = """Answer the question based only on the following context:
-{context}
-Question: {question}
-"""
-after_rag_prompt = ChatPromptTemplate.from_template(after_rag_template)
-after_rag_chain = (
-    {"context": retriever, "question": RunnablePassthrough()}
-    | after_rag_prompt 
-    | model_local 
-    | StrOutputParser()
+system_prompt: str = (
+    "Use the given context to answer the question. "
+    "If you don't know the answer, say you don't know. Don't make up answers."
+    "Use three sentence maximum and keep the answer concise. "
+    "Context: {context}"
 )
 
-println(after_rag_chain.invoke("What is Ollama?"))
+prompt: ChatPromptTemplate = ChatPromptTemplate.from_messages(
+    [
+        ("system", system_prompt),
+        ("human", "{input}"),
+    ]
+)
 
-def println(string: str) -> None:
-    print("\n" + string)
+question_answer_chain: RunnableBinding = create_stuff_documents_chain(llm, prompt)
+chain: RunnableBinding = create_retrieval_chain(retriever, question_answer_chain)
+response: dict = chain.invoke({"input": query}) 
+answer: str = response.get('answer')
+
+qa_dict = {
+    'question': query,
+    'answer': answer
+}
+
+qa_json = json.dumps(qa_dict, indent=1)
+
+print(qa_json)
