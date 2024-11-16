@@ -13,7 +13,6 @@ from langchain_core.documents import Document
 from langchain_core.vectorstores import VectorStoreRetriever
 from typing import List, Dict, Any
 
-
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 

@@ -3,6 +3,16 @@ import time
 import json
 import sys
 
+rabbitmq_config = {
+    host: '0.0.0.0',
+    enqueue: {
+        wpp: 'WPP_QUEUE'
+    },
+    consume: {
+        sync: 'SYNC_QUEUE'
+    },
+}
+
 # RabbitMQ connection settings
 RABBITMQ_HOST = 'localhost'
 INPUT_QUEUE = 'input_queue'
@@ -16,12 +26,10 @@ def create_connection():
         sys.exit(1)
 
 def process_message(body):
-    """Simulate message processing."""
     try:
-        payload = json.loads(body.decode())  # Decode the message (JSON format)
-        sys.stderr.write(f"Processing message: {payload}\n")
+        payload = json.loads(body.decode()) 
+        sys.stdout.write(f"Processing message: {payload}\n")
 
-        # Simulate some processing on the payload
         payload['processed'] = True
         payload['processed_at'] = time.ctime()
 
@@ -30,56 +38,48 @@ def process_message(body):
         sys.stderr.write(f"Error processing message: {e}\n")
         sys.exit(1)
 
-def send_message(message, queue_name):
-    """Send the processed message to the output queue."""
+def enqueue(message, queue_name):
     try:
         connection = create_connection()
         channel = connection.channel()
         channel.queue_declare(queue=queue_name, durable=True)
 
-        # Publish the message to the specified queue
         channel.basic_publish(
             exchange='',
             routing_key=queue_name,
             body=json.dumps(message),
-            properties=pika.BasicProperties(delivery_mode=2)  # Make message persistent
+            properties=pika.BasicProperties(delivery_mode=2)  
         )
-        sys.stderr.write(f"Sent message to {queue_name}: {message}\n")
+
+        sys.stdout.write(f"Sent message to {queue_name}: {message}\n")
         connection.close()
     except Exception as e:
         sys.stderr.write(f"Error sending message to {queue_name}: {e}\n")
         sys.exit(1)
 
 def callback(ch, method, properties, body):
-    """Callback function for consuming messages."""
     try:
-        # Process the incoming message
         processed_message = process_message(body)
 
-        # Send the processed message to the output queue
         send_message(processed_message, OUTPUT_QUEUE)
 
-        # Acknowledge the message
         ch.basic_ack(delivery_tag=method.delivery_tag)
-        sys.stderr.write(f"Message processed and sent to {OUTPUT_QUEUE}\n")
+        sys.stdout.write(f"Message processed and sent to {OUTPUT_QUEUE}\n")
     except Exception as e:
         sys.stderr.write(f"Error in callback: {e}\n")
         sys.exit(1)
 
 def consume_messages():
-    """Start consuming messages from RabbitMQ."""
     try:
         connection = create_connection()
         channel = connection.channel()
 
-        # Declare the input queue (ensure it exists)
         channel.queue_declare(queue=INPUT_QUEUE, durable=True)
-        channel.basic_qos(prefetch_count=1)  # Fair dispatch (one message at a time)
+        channel.basic_qos(prefetch_count=1)  
 
-        # Start consuming messages from the input queue
         channel.basic_consume(queue=INPUT_QUEUE, on_message_callback=callback)
 
-        sys.stderr.write(f"Listening for messages on {INPUT_QUEUE}...\n")
+        sys.stdout.write(f"Listening for messages on {INPUT_QUEUE}...\n")
         channel.start_consuming()
     except Exception as e:
         sys.stderr.write(f"Error consuming messages: {e}\n")
