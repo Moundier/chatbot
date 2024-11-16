@@ -4,3 +4,4 @@ langchain-ollama
 tiktoken
 bs4
 chromadb
+pika
