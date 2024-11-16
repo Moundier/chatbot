@@ -53,14 +53,17 @@ services:
     networks:
       - pg_network
 
-  version: '3.8'
+  # chromadb:
+  #   image: chromadb/chromadb:latest
+  #   container_name: chromadb_server
+  #   ports:
+  #     - "8000:8000"
+  #   restart: always
 
-  chromadb:
-    image: chromadb/chromadb:latest
-    container_name: chromadb_server
-    ports:
-      - "8000:8000"
-    restart: always
+networks:
+  pg_network:
+    driver: bridge
 
 volumes:
   redis-insight:
+  pgvector_data:
