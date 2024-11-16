@@ -3,15 +3,15 @@ import time
 import json
 import sys
 
-rabbitmq_config = {
-    host: '0.0.0.0',
-    enqueue: {
-        wpp: 'WPP_QUEUE'
-    },
-    consume: {
-        sync: 'SYNC_QUEUE'
-    },
-}
+rabbitmq_config = dict(
+    host='0.0.0.0',
+    enqueue=dict(
+        wpp='WPP_QUEUE'
+    ),
+    consume=dict(
+        sync='SYNC_QUEUE'
+    )
+)
 
 # RabbitMQ connection settings
 RABBITMQ_HOST = 'localhost'
@@ -20,9 +20,11 @@ OUTPUT_QUEUE = 'output_queue'
 
 def create_connection():
     try:
-        return pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))
+        host = rabbitmq_config['host']
+        return pika.BlockingConnection(pika.ConnectionParameters(host=host))
     except pika.exceptions.AMQPConnectionError as e:
-        sys.stderr.write(f"Error connecting to RabbitMQ: {e}\n")
+        sys.stderr.write(f"Error: Is the RabbitMQ service running?\n")
+        sys.stderr.write(f"Trace:({repr(e)})\n")
         sys.exit(1)
 
 def process_message(body):
@@ -36,6 +38,18 @@ def process_message(body):
         return payload
     except Exception as e:
         sys.stderr.write(f"Error processing message: {e}\n")
+        sys.exit(1)
+
+def callback(ch, method, properties, body):
+    try:
+        processed_message = process_message(body)
+
+        send_message(processed_message, OUTPUT_QUEUE)
+
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+        sys.stdout.write(f"Message processed and sent to {OUTPUT_QUEUE}\n")
+    except Exception as e:
+        sys.stderr.write(f"Error in callback: {e}\n")
         sys.exit(1)
 
 def enqueue(message, queue_name):
@@ -57,18 +71,6 @@ def enqueue(message, queue_name):
         sys.stderr.write(f"Error sending message to {queue_name}: {e}\n")
         sys.exit(1)
 
-def callback(ch, method, properties, body):
-    try:
-        processed_message = process_message(body)
-
-        send_message(processed_message, OUTPUT_QUEUE)
-
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-        sys.stdout.write(f"Message processed and sent to {OUTPUT_QUEUE}\n")
-    except Exception as e:
-        sys.stderr.write(f"Error in callback: {e}\n")
-        sys.exit(1)
-
 def consume_messages():
     try:
         connection = create_connection()
@@ -85,9 +87,12 @@ def consume_messages():
         sys.stderr.write(f"Error consuming messages: {e}\n")
         sys.exit(1)
 
-if __name__ == '__main__':
+def run_application() -> None:
     try:
         consume_messages()
     except KeyboardInterrupt:
         sys.stderr.write("Shutting down...\n")
         sys.exit(0)
+
+if __name__ == '__main__':
+    run_application()
