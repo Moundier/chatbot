@@ -1,9 +1,9 @@
-import { QrCode } from "./qrcode.model";
+import { QRCode } from "./qrcode.model";
 import { promises as fs } from 'fs';
 
 export class QrCodeService {
     
-    public parseQrCode(base64Qr: string): QrCode | null {
+    public parseQRCode(base64Qr: string): QRCode | null {
         let matches = base64Qr.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
         
         if (matches) {
@@ -16,7 +16,7 @@ export class QrCodeService {
         return null;
     }
 
-    public async saveQrCodeImage(qrCode: QrCode, name: string): Promise<void> {
+    public async saveQRCodeImage(qrCode: QRCode, name: string): Promise<void> {
         if (qrCode.data) {
             const f: string = name.endsWith('.png') ? name : `${name}.png`;
             await fs.writeFile(f, qrCode.data, 'binary');

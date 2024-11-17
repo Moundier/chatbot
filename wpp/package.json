@@ -10,8 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/amqplib": "^0.10.5",
     "@wppconnect-team/wppconnect": "^1.35.1",
-    "amqp": "^0.2.7",
+    "amqplib": "^0.10.4",
     "tsx": "^4.19.2"
   }
 }
