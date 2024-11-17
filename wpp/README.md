@@ -12,6 +12,3 @@ npx npm install tsx amqp @wppconnect-team/wppconnect amqplib
 
 ### Running
 npx tsx index.ts
-
-### Rabbit
-- Py https://www.youtube.com/watch?v=HHFoCt1NIGY&t=27s
