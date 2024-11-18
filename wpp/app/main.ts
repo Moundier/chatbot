@@ -1,12 +1,14 @@
-import { getChannel } from './modules/rabbitmq/rabbitmq';
-import { wppConnect, onMessage } from './modules/whatsapp/whatsapp';
 import botRepository from './models/bot/bot.repository';
 import { Channel, ConsumeMessage } from 'amqplib';
+
+import { wppConnect } from './modules/whatsapp/whatsapp';
 import { Message, Whatsapp } from '@wppconnect-team/wppconnect';
+
+import { getChannel } from './modules/rabbitmq/rabbitmq';
+import { QUEUE_NAMES } from './modules/rabbitmq/rabbitmq.config';
 
 export const main: (() => Promise<void>) = (async (): Promise<void> => {
     
-    config();
     const channel: Channel = await getChannel();
     const client: Whatsapp = await wppConnect();
 
@@ -17,69 +19,48 @@ export const main: (() => Promise<void>) = (async (): Promise<void> => {
             client.sendText(message.from, response);
         }
 
-        if (message.fromMe) {
-            console.log(`${message.content}`);
+        let messageToQueue = {
+            id: message.id,
+            content: message.content,
+            from: message.from,
+            to: message.to,
+            timestamp: message.timestamp,
+            phoneNumber: message.from.split('@')[0],
+            possibleNames: {
+                name: message.sender.name,
+                shortName: message.sender.shortName,
+                pushname: message.sender.pushname,
+            }
+        }
+
+        if (message.fromMe || message.isGroupMsg || message.isNotification || message.type === 'image' || message.type === 'video' || message.mediaData.type === 'unknown') {
+            console.log('[Ignoring]');
+            console.log(`${JSON.stringify(messageToQueue)}\n`);
             return;
         }
 
-        channel.sendToQueue('synchronizer_queue', Buffer.from(JSON.stringify(message)), {
+        if (message.from) {
+            console.log(`${JSON.stringify(messageToQueue)}\n`);
+        }
+
+        channel.sendToQueue(QUEUE_NAMES.requestQueue, Buffer.from(JSON.stringify(messageToQueue)), {
             persistent: true,
         });
 
-        onMessage(message);
     });
 
-    channel.consume('response_rag_queue', async (consumeMessage: ConsumeMessage | null) => {
+    channel.consume(QUEUE_NAMES.responseQueue, async (consumeMessage: ConsumeMessage | null) => {
         if (!consumeMessage) {
             return;
         }
 
-        const message = JSON.parse(consumeMessage.content.toString());
+        console.log(consumeMessage)
+
+        const message: Message = JSON.parse(consumeMessage.content.toString());
         console.log('Message received from RabbitMQ:', message);
 
         await client.sendText(message.from, `Received your message: ${message.content}`);
         channel.ack(consumeMessage);
     }, { noAck: false });
 
-});
-
-const config: (() => Promise<void>) = (async (): Promise<void> => {
-    
-    let services: object[] = [
-        {
-            name: 'RabbitMQ',
-            address: ['http://localhost:15672'],
-            environment: { user: 'guest', pass: 'guest' },
-            timestamp: new Date().toISOString(),
-        },
-        {
-            name: 'Redis',
-            address: ['http://localhost:6379'],
-            environment: { password: 'secret' },
-            timestamp: new Date().toISOString(),
-        },
-        {
-            name: 'Redis Insight',
-            address: ['http://localhost:5540'],
-            timestamp: new Date().toISOString(),
-        },
-        {
-            name: 'PgVector',
-            address: ['http://localhost:5432'],
-            environment: {
-                user: 'postgres',
-                password: 'postgres',
-                db: 'postgres',
-            },
-            timestamp: new Date().toISOString(),
-        },
-        {
-            name: 'PgAdmin',
-            address: ['http://localhost:80'],
-            environment: JSON.stringify({email: 'admin@gmail.com', password: '123456'}, null, 1),
-            timestamp: new Date().toISOString(),
-        },
-    ];
-
-    console.table(services);
 });
