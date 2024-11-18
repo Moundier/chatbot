@@ -3,10 +3,11 @@ import { QRCode } from '../../models/qrcode/qrcode.model';
 import qrService from '../../models/qrcode/qrcode.service';
 
 type MessageFilter = {
-    id: string;
-    content: string;
-    pushname: string;
-    shortname: string;
+    id: string,
+    content: string,
+    from: string,
+    to: string,
+    timestamp: number,
 }
 
 export async function wppConnect(): Promise<Whatsapp> {
@@ -23,19 +24,21 @@ export async function wppConnect(): Promise<Whatsapp> {
                 qrService.saveQRCodeImage(qrCode, 'qr-code')
             }
         },
+        updatesLog: false,
     });
 
     return connection;
 }
 
-export async function onMessage(message: Message): Promise<void> {
-    
-    const filtered: Partial<MessageFilter> = {
+export async function onAnyMessageEvent(message: Message): Promise<void> {
+
+    let messageEnqueued: Partial<MessageFilter> = {
         id: message.id,
         content: message.content,
-        pushname: message.sender.pushname,
-        shortname: message.sender.shortName,
-    };
+        from: message.from,
+        to: message.to,
+        timestamp: message.timestamp,
+    }
 
-    console.log('[Message]:\n' + JSON.stringify(filtered, null, 1));
+    console.log(messageEnqueued);
 }
