@@ -1,5 +1,6 @@
 package com.example.demo.scheduler;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.message.Message;
@@ -19,10 +20,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SchedulerService {
 
-    private RedisService redisService;
-    private ScheduledExecutorService scheduler;
-    private ConcurrentHashMap<String, ScheduledFuture<?>> scheduledTasks;
-    private GsonService gsonService;
+    private final RabbitTemplate rabbitTemplate;
+    private final RedisService redisService;
+    private final GsonService gsonService;
+
+    private final ScheduledExecutorService scheduler;
+    private ConcurrentHashMap<String, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();;
 
     public void process(Message payload) {
         
@@ -47,7 +50,8 @@ public class SchedulerService {
         ScheduledFuture<?> sf = scheduledTasks.get(key);
         if (sf != null && !sf.isCancelled()) {
             System.out.println("task-id already exists: " + key + ". Cancelling the old task.");
-            sf.cancel(false);
+            sf.cancel(true);  // Use true to interrupt the task if it's running
+            scheduledTasks.remove(key); // Remove the old task from the map
         }
 
         // Create a new task to be scheduled
@@ -56,7 +60,8 @@ public class SchedulerService {
             final String json = redisService.get(key);
             Message data = this.gsonService.fromJson(json, Message.class);
             redisService.delete(key);
-            sendToSpark(data);
+            this.publishToQueue(data);
+            // sf.cancel(false);
         };
 
         // Schedule a new task and store the future in the map
@@ -66,8 +71,9 @@ public class SchedulerService {
         System.out.println("Scheduled task-id: " + key + " with a 40-second timer.");
     }
 
-    private void sendToSpark(Message payload) {
-        System.out.println("Sending payload to Spark: " + payload.getPhoneNumber() + " - " + payload.getMessage());
+    private void publishToQueue(Message payload) {
+        // System.out.println("Sending payload to Spark: " + payload.getPhoneNumber() + " - " + payload.getMessage());
+        this.rabbitTemplate.convertAndSend(payload);
     }
 
 }

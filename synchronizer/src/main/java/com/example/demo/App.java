@@ -10,7 +10,7 @@ public class App {
 
 	public static void main(String[] args) {
 		Class<?>[] sources = {App.class, AppStatus.class};
-        SpringApplication.run(sources, args);
+    SpringApplication.run(sources, args);
 	}
 
 	@Component
