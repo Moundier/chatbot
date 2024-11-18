@@ -1,3 +1,4 @@
+import { Message } from "@wppconnect-team/wppconnect";
 import commands from "./bot.cmds";
 
 export class BotCommandsRepository {

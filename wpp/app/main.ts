@@ -1,4 +1,6 @@
 import botRepository from './models/bot/bot.repository';
+import messageService from './models/message/message.service';
+
 import { Channel, ConsumeMessage } from 'amqplib';
 
 import { wppConnect } from './modules/whatsapp/whatsapp';
@@ -19,31 +21,17 @@ export const main: (() => Promise<void>) = (async (): Promise<void> => {
             client.sendText(message.from, response);
         }
 
-        let messageToQueue = {
-            id: message.id,
-            content: message.content,
-            from: message.from,
-            to: message.to,
-            timestamp: message.timestamp,
-            phoneNumber: message.from.split('@')[0],
-            possibleNames: {
-                name: message.sender.name,
-                shortName: message.sender.shortName,
-                pushname: message.sender.pushname,
-            }
-        }
-
-        if (message.fromMe || message.isGroupMsg || message.isNotification || message.type === 'image' || message.type === 'video' || message.mediaData.type === 'unknown') {
-            console.log('[Ignoring]');
-            console.log(`${JSON.stringify(messageToQueue)}\n`);
+        if (messageService.isDisposable(message)) {
             return;
-        }
+        } 
+
+        let fragment: MessageFragmented | null = messageService.getMessageFragmented(message);
 
         if (message.from) {
-            console.log(`${JSON.stringify(messageToQueue)}\n`);
+            console.log(`${JSON.stringify(fragment)}\n`);
         }
 
-        channel.sendToQueue(QUEUE_NAMES.requestQueue, Buffer.from(JSON.stringify(messageToQueue)), {
+        channel.sendToQueue(QUEUE_NAMES.requestQueue, Buffer.from(JSON.stringify(fragment)), {
             persistent: true,
         });
 
