@@ -16,8 +16,8 @@ export const getChannel: (() => Promise<Channel>) = (async (): Promise<Channel> 
         let connection: Connection = await mqConnect();
 
         const channel: Channel = await connection.createChannel();
-        await channel.assertQueue('request_sync_queue', { durable: true });
-        await channel.assertQueue('response_rag_queue', { durable: true });
+        await channel.assertQueue('request_queue', { durable: true });
+        await channel.assertQueue('response_queue', { durable: true });
 
         return channel;
 
