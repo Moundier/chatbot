@@ -19,9 +19,8 @@ public class MessageController {
     private final SchedulerService schedulerService;
   
     @PostMapping
-    public ResponseEntity<Message> receiveMessage(@RequestBody Message message) {
-        // System.out.println("Received message: " + message);
-        this.schedulerService.process(message);
-        return new ResponseEntity<>(message, HttpStatus.OK);
+    public ResponseEntity<MessageFragment> receiveMessage(@RequestBody MessageFragment messageFragment) {
+        this.schedulerService.process(messageFragment);
+        return new ResponseEntity<>(messageFragment, HttpStatus.OK);
     }
 }
