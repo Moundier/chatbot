@@ -16,6 +16,7 @@ public class MessageFragment {
     private String from;
     private String to;
     private Number timestamp; 
+    private String phoneNumber;
     private PossibleNames possibleNames;
 
     @Data
