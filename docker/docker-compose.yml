@@ -14,6 +14,7 @@ services:
 
   redis:
     image: redis:7-alpine
+    container_name: redis
     restart: always
     ports:
       - "6379:6379"
@@ -22,6 +23,7 @@ services:
       
   redis-insight:
     image: redis/redisinsight:latest
+    container_name: redis_insight
     restart: always
     ports:
       - "5540:5540"
@@ -53,6 +55,35 @@ services:
     networks:
       - pg_network
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./root/.ollama:/root/.ollama
+    networks:
+      - webui_network
+    devices:
+      # - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+      - /dev/nvidia0:/dev/nvidia0
+      - /dev/nvidiactl:/dev/nvidiactl
+      - /dev/nvidia-uvm:/dev/nvidia-uvm
+
+  webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    ports: 
+      - "3000:8080"
+    volumes:
+      - ./app/backend/data:/app/backend/data
+      - ./root/.ollama/models:/ollama/models
+    networks:
+      - webui_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
   # chromadb:
   #   image: chromadb/chromadb:latest
   #   container_name: chromadb_server
@@ -61,6 +92,8 @@ services:
   #   restart: always
 
 networks:
+  webui_network:
+    driver: bridge
   pg_network:
     driver: bridge
 

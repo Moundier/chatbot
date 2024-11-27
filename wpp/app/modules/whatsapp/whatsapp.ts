@@ -14,6 +14,7 @@ export async function wppConnect(): Promise<Whatsapp> {
     
     const connection: Whatsapp = await create({
         session: '',
+        folderNameToken: 'tokens',
         logQR: true,
         debug: false,
         disableWelcome: true,

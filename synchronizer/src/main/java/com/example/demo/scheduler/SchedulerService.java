@@ -38,10 +38,10 @@ public class SchedulerService {
 
         if (Objects.nonNull(existing)) {
             existing.setContent(String.join(" ", existing.getContent(), payload.getContent()));
-            System.out.println("Update: " + existing.toString());
+            System.out.println("\nUpdate: " + existing.toString());
             value = this.gsonService.toJson(existing);
         } else {
-            System.out.println("No existing payload data found. Creating new entry.");
+            System.out.println("\nNo existing payload data found. Creating new entry.");
         }
 
         // Update Redis with the new or updated value
@@ -72,7 +72,13 @@ public class SchedulerService {
     }
 
     private void publishToQueue(MessageFragment payload) {
-        this.rabbitTemplate.convertAndSend("request_rag", payload);
+        try {
+            String jsonPayload = gsonService.toJson(payload);
+            rabbitTemplate.convertAndSend("", "processing_queue", jsonPayload);
+            System.out.println("Message sent to RabbitMQ: " + jsonPayload);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }    
     }
 
 }

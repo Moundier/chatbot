@@ -18,6 +18,34 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 
 import json
 
+def query_ollama(question: str, context: str) -> str:
+    headers = {
+        "Content-Type": "application/json",
+    }
+    
+    payload = {
+        "model": "mistral",
+        "messages": [
+            {"role": "system", "content": "Use the given context to answer the question. If you don't know the answer, say you don't know. Don't make up answers. Use three sentence maximum and keep the answer concise. Context: {context}"},
+            {"role": "user", "content": question}
+        ],
+        "stream": True,
+    }
+    
+    response = requests.post(OLLAMA_API_URL, json=payload, headers=headers, stream=True)
+
+    if response.status_code != 200:
+        sys.stderr.write(f"Error: {response.status_code}\n\n")
+        sys.exit(1)
+
+    response_data = response.json()
+    
+    answer = response_data.get("text", "Sorry, I don't know the answer.")
+
+    # answer = query_ollama(query, context)
+    
+    return answer
+
 llm = ChatOllama(model="mistral", base_url="http://localhost:11434")
 
 # 1. Load and split data into chunks
@@ -50,24 +78,41 @@ retriever = chroma.as_retriever(search_kwargs={'k': len(docs)})
 
 query: str = "What is Ollama?"
 
-system_prompt: str = (
-    "Use the given context to answer the question. "
-    "If you don't know the answer, say you don't know. Don't make up answers."
-    "Use three sentence maximum and keep the answer concise. "
-    "Context: {context}"
-)
+# 1. LangChain
+# system_prompt: str = (
+#     "Use the given context to answer the question. "
+#     "If you don't know the answer, say you don't know. Don't make up answers."
+#     "Use three sentence maximum and keep the answer concise. "
+#     "Context: {context}"
+# )
 
-prompt: ChatPromptTemplate = ChatPromptTemplate.from_messages(
-    [
-        ("system", system_prompt),
-        ("human", "{input}"),
-    ]
-)
+# prompt: ChatPromptTemplate = ChatPromptTemplate.from_messages(
+#     [
+#         ("system", system_prompt),
+#         ("human", "{input}"),
+#     ]
+# )
 
-question_answer_chain: RunnableBinding = create_stuff_documents_chain(llm, prompt)
-chain: RunnableBinding = create_retrieval_chain(retriever, question_answer_chain)
-response: dict = chain.invoke({"input": query}) 
-answer: str = response.get('answer')
+# question_answer_chain: RunnableBinding = create_stuff_documents_chain(llm, prompt)
+# chain: RunnableBinding = create_retrieval_chain(retriever, question_answer_chain)
+# response: dict = chain.invoke({"input": query}) 
+# answer: str = response.get('answer')
+
+# qa_dict = {
+#     'question': query,
+#     'answer': answer
+# }
+
+# qa_json = json.dumps(qa_dict, indent=1)
+
+# print(qa_json)
+
+# 2. Optimized 
+context_documents = retriever.get_relevant_documents(query)
+context = "\n".join([doc.page_content for doc in context_documents])
+
+# Generate the answer using Ollama model via the HTTP request
+answer = query_ollama(query, context)
 
 qa_dict = {
     'question': query,

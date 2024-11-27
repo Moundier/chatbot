@@ -17,7 +17,7 @@ public class MessageService {
     private final GsonService gsonService;
 
     public void processIncomingFragmentedMessage(String message) {
-        System.out.println(message);
+        // System.out.println(message);
         Class<MessageFragment> clazz = MessageFragment.class;
         MessageFragment messageFragment = gsonService.fromJson(message, clazz);
         schedulerService.process(messageFragment); 

@@ -9,6 +9,8 @@ import { Message, Whatsapp } from '@wppconnect-team/wppconnect';
 import { getChannel } from './modules/rabbitmq/rabbitmq';
 import { QUEUE_NAMES } from './modules/rabbitmq/rabbitmq.config';
 
+import { MessageFragmented } from './models/message/message.model';
+
 export const main: (() => Promise<void>) = (async (): Promise<void> => {
     
     const channel: Channel = await getChannel();
@@ -44,10 +46,10 @@ export const main: (() => Promise<void>) = (async (): Promise<void> => {
 
         console.log(consumeMessage)
 
-        const message: Message = JSON.parse(consumeMessage.content.toString());
+        const message: MessageFragmented = JSON.parse(consumeMessage.content.toString());
         console.log('Message received from RabbitMQ:', message);
 
-        await client.sendText(message.from, `Received your message: ${message.content}`);
+        await client.sendText(message.from, `Received your message: ${JSON.stringify(message)}`);
         channel.ack(consumeMessage);
     }, { noAck: false });
 

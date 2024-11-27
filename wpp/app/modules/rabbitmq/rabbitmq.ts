@@ -4,8 +4,9 @@ export const mqConnect: (() => Promise<Connection>) = (async (): Promise<Connect
     
     try {
         return await amqp.connect('amqp://localhost');
-    } catch (error: unknown) {
-        throw new Error(`Connection error: ${(error as Error).message}`);
+    } catch (error: AggregateError | unknown) {
+        const err: string = 'Rabbitmq not running';
+        throw new Error(err);
     }
 });
 
@@ -22,6 +23,7 @@ export const getChannel: (() => Promise<Channel>) = (async (): Promise<Channel> 
         return channel;
 
     } catch (error: unknown) {
-        throw new Error(`Channel error: ${(error as Error).message}`);
+        const err: string = 'Depends on Rabbitmq';
+        throw new Error(err);
     }
 });

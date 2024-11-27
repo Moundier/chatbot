@@ -1,4 +1,4 @@
-interface MessageFragmented {
+export interface MessageFragmented {
     id: string;
     content: string;
     from: string;
@@ -10,4 +10,6 @@ interface MessageFragmented {
         shortName?: string;
         pushname?: string;
     };
+    response: string;
+    processed_at: string;
 }
