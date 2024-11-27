@@ -16,35 +16,47 @@ from typing import List, Dict, Any
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 
+import ollama
+
 import json
 
 def query_ollama(question: str, context: str) -> str:
-    headers = {
-        "Content-Type": "application/json",
-    }
     
-    payload = {
-        "model": "mistral",
-        "messages": [
-            {"role": "system", "content": "Use the given context to answer the question. If you don't know the answer, say you don't know. Don't make up answers. Use three sentence maximum and keep the answer concise. Context: {context}"},
-            {"role": "user", "content": question}
-        ],
-        "stream": True,
-    }
-    
-    response = requests.post(OLLAMA_API_URL, json=payload, headers=headers, stream=True)
+    return ollama.chat(
+        'llama3.2',
+        messages = [
+            {'role': "system", "content": "Use the given context to answer the question. If you don't know the answer, say you don't know. Don't make up answers. Use three sentence maximum and keep the answer concise. Context: {context}"},
+            {'role': "user", "content": question}
+        ]
+    )
 
-    if response.status_code != 200:
-        sys.stderr.write(f"Error: {response.status_code}\n\n")
-        sys.exit(1)
-
-    response_data = response.json()
+# def query_ollama(question: str, context: str) -> str:
+#     headers = {
+#         "Content-Type": "application/json",
+#     }
     
-    answer = response_data.get("text", "Sorry, I don't know the answer.")
-
-    # answer = query_ollama(query, context)
+#     payload = {
+#         "model": "mistral",
+#         "messages": [
+#             {"role": "system", "content": "Use the given context to answer the question. If you don't know the answer, say you don't know. Don't make up answers. Use three sentence maximum and keep the answer concise. Context: {context}"},
+#             {"role": "user", "content": question}
+#         ],
+#         "stream": True,
+#     }
     
-    return answer
+#     response = requests.post(OLLAMA_API_URL, json=payload, headers=headers, stream=True)
+
+#     if response.status_code != 200:
+#         sys.stderr.write(f"Error: {response.status_code}\n\n")
+#         sys.exit(1)
+
+#     response_data = response.json()
+    
+#     answer = response_data.get("text", "Sorry, I don't know the answer.")
+
+#     # answer = query_ollama(query, context)
+    
+#     return answer
 
 llm = ChatOllama(model="mistral", base_url="http://localhost:11434")
 

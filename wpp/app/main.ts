@@ -49,7 +49,7 @@ export const main: (() => Promise<void>) = (async (): Promise<void> => {
         const message: MessageFragmented = JSON.parse(consumeMessage.content.toString());
         console.log('Message received from RabbitMQ:', message);
 
-        await client.sendText(message.from, `Received your message: ${JSON.stringify(message)}`);
+        await client.sendText(message.from, `Received your message: ${JSON.stringify(message.response)}`);
         channel.ack(consumeMessage);
     }, { noAck: false });
 

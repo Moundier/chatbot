@@ -1,0 +1,36 @@
+{
+  "perguntas_respostas": [
+    {
+      "pergunta": "O que é o LUMAC?",
+      "resposta": "O LUMAC (Laboratório de Computação Ubíqua, Móvel e Aplicada) é um centro de pesquisa, inovação, ensino e extensão localizado no Colégio Politécnico da Universidade Federal de Santa Maria (UFSM). Ele reúne docentes, técnicos, alunos de graduação e pós-graduação para desenvolver projetos interdisciplinares."
+    },
+    {
+      "pergunta": "Quais são as principais áreas de interesse do LUMAC?",
+      "resposta": "1. Computação Ubíqua (Ubicomp): Busca integrar tecnologia ao cotidiano das pessoas de maneira imperceptível, promovendo interação contínua entre humanos e máquinas.\n2. Inteligência Artificial e Ciência de Dados: Envolve modelagem e análise de dados para gerar insights e tomar decisões baseadas em dados.\n3. Gerenciamento de Processos de Negócios: Foco na análise e otimização de processos empresariais.\n4. Programação Web e Mobile: Desenvolvimento de soluções tecnológicas modernas e adaptáveis para dispositivos móveis e web."
+    },
+    {
+      "pergunta": "Quais projetos estão em desenvolvimento ou já foram realizados?",
+      "resposta": "1. Machine Learning para Prevalência de Doenças: Uso de aprendizado de máquina para monitorar doenças em suínos.\n2. Projeto Cadernos Digitais: Focado em ensino e desenvolvimento de software.\n3. Plataforma PDSA-RS: Solução baseada em blockchain para dispositivos móveis e aplicações web.\n4. Projeto Renasce: Sistemas de recomendação para iniciativas de SmartCampus."
+    },
+    {
+      "pergunta": "Quem compõe a equipe do laboratório?",
+      "resposta": "O laboratório conta com professores, técnicos e alunos. Entre os coordenadores estão: Alencar Machado, Luiz Fernando Sangoi, e Vinícius Maran (professores e coordenadores). Outros professores como Adriano Quilião, Bruno Mozzaquatro, e Jonas Gassen. Técnicos como Anderson Padoin e Diones Dutra. Discentes em formação, como Denilson Ebling e Matheus Flores."
+    },
+    {
+      "pergunta": "Qual é a infraestrutura do LUMAC?",
+      "resposta": "O laboratório está situado no Colégio Politécnico da UFSM, no prédio C, sala C12, em Santa Maria, RS. Ele oferece um ambiente colaborativo para inovação tecnológica."
+    },
+    {
+      "pergunta": "Quais são os depoimentos sobre o impacto do LUMAC?",
+      "resposta": "Ex-integrantes destacam o papel do LUMAC na formação acadêmica e profissional. Um exemplo é Matheus Friedhein, que iniciou sua participação em 2016 e hoje trabalha como desenvolvedor fullstack, aplicando tecnologias como Angular, Spring, RabbitMQ e PostgreSQL."
+    },
+    {
+      "pergunta": "Como entrar em contato com o LUMAC?",
+      "resposta": "Endereço: Colégio Politécnico da UFSM, Prédio C, Sala C12, Santa Maria, RS.\nE-mail: lumac@ufsm.br"
+    },
+    {
+      "pergunta": "Quais oportunidades o laboratório oferece?",
+      "resposta": "O LUMAC regularmente abre editais para bolsas de pesquisa e participação em projetos, incentivando o envolvimento de alunos em tecnologia e inovação."
+    }
+  ]
+}

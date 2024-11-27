@@ -17,13 +17,15 @@ async def process_message(message: IncomingMessage) -> None:
     async with message.process():
         try:
             data = json.loads(message.body.decode())
-            
-            # Extract question and context
+
             question: str = data.get("content", "").strip()
+
+            print(question)
+            
             if not question:
                 raise ValueError("Missing 'content' (question) in the message.")
 
-            print(f"Question: {question}")
+            print(f"Incoming Message: {question}")
 
             # STARTS VECTORIZER
             # Load and process documents
@@ -46,8 +48,9 @@ async def process_message(message: IncomingMessage) -> None:
             
             context_documents = retriever.get_relevant_documents(query=question)
             context = "\n".join([doc.page_content for doc in context_documents])
-
-            response = await ollama_query_response(question, context)
+            print(f"Context: {context}")
+            response = ollama_query_response(question, context)
+            print(f"Response: {response}")
 
             data.update({
                 "response": response,
@@ -62,7 +65,7 @@ async def process_message(message: IncomingMessage) -> None:
             )
 
             print()
-            print(f"Processed and forwarded message: {json.dumps(data, indent=2)}")
+            print(f"Processed and forwarded message: {json.dumps(data, indent=2)}\n")
 
         except Exception as e:
             print(f"Failed to process message: {e}")
