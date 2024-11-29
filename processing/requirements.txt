@@ -1,7 +1,9 @@
 langchain 
 langchain_community
 langchain-ollama
+langchain_postgres
 tiktoken
 bs4
 chromadb
 pika
+aiohttp

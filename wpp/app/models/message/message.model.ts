@@ -10,6 +10,6 @@ export interface MessageFragmented {
         shortName?: string;
         pushname?: string;
     };
-    response: string;
-    processed_at: string;
+    response?: string;
+    processed_at?: string;
 }

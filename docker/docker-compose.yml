@@ -9,8 +9,9 @@ services:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
     volumes:
+      - ./volumes/rabbitmq_data:/var/lib/rabbitmq
       - ./script.sh:/init/script.sh
-    command: ["/bin/bash", "-c", "/init/script.sh"] 
+    command: ["/bin/bash", "-c", "/init/script.sh"]
 
   redis:
     image: redis:7-alpine
@@ -20,25 +21,25 @@ services:
       - "6379:6379"
     environment:
       REDIS_PASSWORD: secret
-      
+    volumes:
+      - ./volumes/redis_data:/data
+
   redis-insight:
     image: redis/redisinsight:latest
     container_name: redis_insight
     restart: always
     ports:
       - "5540:5540"
-    volumes:
-      - redis-insight:/data
-    
+
   pgvector:
     image: ankane/pgvector
     container_name: pgvector
     environment:
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_USER: myuser
-      POSTGRES_DB: mydatabase
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
     volumes:
-      - pgvector_data:/var/lib/postgresql/data
+      - ./volumes/pgvector_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     networks:
@@ -48,10 +49,10 @@ services:
     image: dpage/pgadmin4
     container_name: pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: adminpassword
+      PGADMIN_DEFAULT_EMAIL: admin@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: admin@gmail.com
     ports:
-      - "80:80"
+      - "5050:80"
     networks:
       - pg_network
 
@@ -61,7 +62,7 @@ services:
     ports:
       - "11434:11434"
     volumes:
-      - ./root/.ollama:/root/.ollama
+      - ./volumes/ollama_data:/root/.ollama
     networks:
       - webui_network
     devices:
@@ -76,8 +77,8 @@ services:
     ports: 
       - "3000:8080"
     volumes:
-      - ./app/backend/data:/app/backend/data
-      - ./root/.ollama/models:/ollama/models
+      - ./volumes/webui_data:/app/backend/data
+      - ./volumes/ollama_models:/ollama/models
     networks:
       - webui_network
     extra_hosts:
@@ -90,5 +91,9 @@ networks:
     driver: bridge
 
 volumes:
-  redis-insight:
+  redis_data:
+  webui_data:
+  rabbitmq_data:
   pgvector_data:
+  ollama_data:
+  ollama_models:

@@ -1,10 +1,24 @@
 import { Message } from "@wppconnect-team/wppconnect";
+import { MessageFragmented } from "./message.model";
+
+const IGNORED_NUMBERS = [
+    '555584510561', // Maran
+    '555591737769', // Alencar
+    '555591980995', // Friedhein
+];
+
+type MessageFilter = {
+    text: string; 
+    condition: boolean;
+}
 
 export class MessageFragmentedService {
     
     public getMessageFragmented(message: Message): MessageFragmented | null {
 
-        if (message === null) return null;
+        if (Object.is(message, null)) {
+            return null;
+        }
 
         const messageFragmented: MessageFragmented = {
             id: message.id,
@@ -22,31 +36,39 @@ export class MessageFragmentedService {
 
         return messageFragmented;
     }
-
-    public isDisposable(message: Message): boolean {
-        switch (true) {
-            case message.fromMe:
-                console.log('[Ignoring] - Message from myself');
-                return true;
-            case message.isGroupMsg:
-                console.log('[Ignoring] - Group message');
-                return true;
-            case message.isNotification:
-                console.log('[Ignoring] - Notification message');
-                return true;
-            case message.type === 'image':
-                console.log('[Ignoring] - Image message');
-                return true;
-            case message.type === 'video':
-                console.log('[Ignoring] - Video message');
-                return true;
-            case message.mediaData.type === 'unknown':
-                console.log('[Ignoring] - Unknown media type');
-                return true;
-            default:
-                return false;
+    
+    public matchesChosen(message: Message): boolean {
+        const senderNumber = message.from.split('@')[0];
+    
+        if (IGNORED_NUMBERS.includes(senderNumber)) {
+            return true;
         }
+    
+        return false;
     }
+
+    public matchesRule(message: Message): boolean {
+
+        const rules: MessageFilter[] = [
+            { text: 'INFO [IGNORED] - From sender', condition: message.fromMe },
+            { text: 'INFO [IGNORED] - Group message', condition: message.isGroupMsg },
+            { text: 'INFO [IGNORED] - System notification', condition: message.isNotification },
+            { text: 'INFO [IGNORED] - Image', condition: message.type === 'image' },
+            { text: 'INFO [IGNORED] - Video', condition: message.type === 'video' },
+            { text: 'FAIL [IGNORED] - Unsupported media type', condition: message.mediaData?.type === 'unknown' },
+        ];
+    
+        const match: MessageFilter | undefined = rules.find(rule => rule.condition);
+    
+        if (match) {
+            const time = new Date().toISOString();
+            console.log(`[${time}] ${match.text}`);
+            return true;
+        }
+    
+        return false;
+    }
+    
 }
 
 export default new MessageFragmentedService();

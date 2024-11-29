@@ -22,7 +22,7 @@
     },
     {
       "pergunta": "Quais são os depoimentos sobre o impacto do LUMAC?",
-      "resposta": "Ex-integrantes destacam o papel do LUMAC na formação acadêmica e profissional. Um exemplo é Matheus Friedhein, que iniciou sua participação em 2016 e hoje trabalha como desenvolvedor fullstack, aplicando tecnologias como Angular, Spring, RabbitMQ e PostgreSQL."
+      "resposta": "Ex-integrantes destacam o papel do LUMAC na formação acadêmica e profissional. Um exemplo é Matheus Friedhein, que iniciou sua participação em 2016 e hoje trabalha como desenvolvedor fullstack, aplicando tecnologias como Angular."
     },
     {
       "pergunta": "Como entrar em contato com o LUMAC?",

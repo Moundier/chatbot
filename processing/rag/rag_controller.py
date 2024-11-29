@@ -1,40 +1,48 @@
-from fastapi import FastAPI, File, UploadFile
-from langchain_ollama import OllamaEmbeddings
-from langchain_community.vectorstores import Chroma
-from langchain.text_splitter import CharacterTextSplitter
-import json
-import os
-# import tempfile
+from fastapi.responses import JSONResponse
+from fastapi import HTTPException
+from rag.rag_service import split_text_from_file, vectorizer_to_pgvector 
 
 @app.post("/vectorize/")
-async def vectorize_file(file: UploadFile = File(...)):
-    """
-    Receives a .txt file, processes it, and returns the vectorization status.
-    """
-    # Read the file content
+async def rag_vectorize_file(file: UploadFile = File(...)):
+    allowed_extensions = {".xlsx", ".pdf", ".txt", ".json"}
+    file_extension = file.filename.split('.')[-1]
+    if f".{file_extension}" not in allowed_extensions:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type: .{file_extension}. Allowed types: {', '.join(allowed_extensions)}"
+        )
+    
     try:
-        # Save the file temporarily
-        with tempfile.NamedTemporaryFile(delete=False, mode='w', encoding='utf-8') as temp_file:
-            temp_file.write(await file.read())
-            temp_file_path = temp_file.name
-
-        # Read the file content
-        with open(temp_file_path, 'r', encoding='utf-8') as f:
-            file_content = f.read()
-
-        # Split the content into chunks
+        file_content = (await file.read()).decode("utf-8")
         docs_splits = split_text_from_file(file_content)
-
-        # Vectorize and store embeddings in PGVector (Chroma)
         chroma = vectorizer_to_pgvector(docs_splits)
 
-        # Respond with a success message (you can customize this response as needed)
-        return {"message": "File vectorized successfully!", "collection_name": chroma.collection_name}
-    
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "success",
+                "message": "File vectorized successfully!", 
+                "collection_name": chroma.collection_name
+            }
+        )
+    except ValueError as ve:
+        return JSONResponse(
+            status_code=422,
+            content={
+                "status": "error", 
+                "message": "A message error occurred.", 
+                "details": str(ve)
+            }
+        )
     except Exception as e:
-        return {"error": str(e)}
+        return JSONResponse(
+            status_code=500,
+            content={
+                "status": "error", 
+                "message": "An unexpected error occurred.", 
+                "details": str(e)
+            }
+        )
 
-    finally:
-        # Cleanup the temporary file
-        if os.path.exists(temp_file_path):
-            os.remove(temp_file_path)
+async def save_question_answer_as_document() -> None:
+    return 

@@ -3,10 +3,11 @@ import asyncio
 
 from rabbit.rabbit_consume import consume_messages
 
-if __name__ == ("__main__"):
+if __name__ == "__main__":
     try:
         asyncio.run(consume_messages())
     except KeyboardInterrupt:
-        print("\nShutting down gracefully...\n")
+        system_exit: str = '\n\nShutting down...\n\n' 
+        sys.stdout.write(system_exit)
         sys.exit(0)
 

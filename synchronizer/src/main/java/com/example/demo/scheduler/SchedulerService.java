@@ -65,7 +65,7 @@ public class SchedulerService {
         };
 
         // Schedule a new task and store the future in the map
-        ScheduledFuture<?> newScheduledTask = scheduler.schedule(task, 40, TimeUnit.SECONDS);
+        ScheduledFuture<?> newScheduledTask = scheduler.schedule(task, 1, TimeUnit.SECONDS);
         scheduledTasks.put(key, newScheduledTask); // Store the new task in the map
 
         System.out.println("Scheduled task-id: " + key + " with a 40-second timer.");

@@ -21,17 +21,20 @@ export const main: (() => Promise<void>) = (async (): Promise<void> => {
 
         if (response) {
             client.sendText(message.from, response);
+            return;
         }
 
-        if (messageService.isDisposable(message)) {
+        if (messageService.matchesChosen(message)) {
             return;
         } 
 
-        let fragment: MessageFragmented | null = messageService.getMessageFragmented(message);
-
-        if (message.from) {
-            console.log(`${JSON.stringify(fragment)}\n`);
+        if (messageService.matchesRule(message)) {
+            return;
         }
+
+        // client.sendText(message.from, `Pong. ${new Date().toISOString()}`);
+
+        let fragment: MessageFragmented | null = messageService.getMessageFragmented(message);
 
         channel.sendToQueue(QUEUE_NAMES.requestQueue, Buffer.from(JSON.stringify(fragment)), {
             persistent: true,
@@ -44,12 +47,10 @@ export const main: (() => Promise<void>) = (async (): Promise<void> => {
             return;
         }
 
-        console.log(consumeMessage)
-
         const message: MessageFragmented = JSON.parse(consumeMessage.content.toString());
-        console.log('Message received from RabbitMQ:', message);
 
-        await client.sendText(message.from, `Received your message: ${JSON.stringify(message.response)}`);
+        await client.sendText(message.from, `Resposta: ${JSON.stringify(message.response)}`);
+
         channel.ack(consumeMessage);
     }, { noAck: false });
 
